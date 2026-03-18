@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Physics Sim - Bouncing Balls</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #222; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;  /* prevent scrollbars */
+        }
+        div.benchmark {
+            position: absolute;
+            top: 180px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="benchmark">
+        <p style="color: rgb(177, 177, 0)">Query result of first Quadrant: <span id="Query_QuadTree"></span></p>
+        <p style="color: rgb(177, 177, 0)">Query time of first Quadrant: <span id="QueryTime_QuadTree"></span></p>
+        <p style="color: rgb(177, 177, 0)">Time to compute Quadtree: <span id="Time_InitialQuadTree"></span></p>
+        <p style="color: rgb(177, 177, 0)">Time to draw Quadtree: <span id="Time_DrawQuadTree"></span></p>
+    </div>
+    
+    <canvas id="myCanvas"></canvas>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
