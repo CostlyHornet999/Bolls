@@ -1,6 +1,6 @@
 
 // Inputs
-export const ballNumber = 2500;
+export const ballNumber = 250;
 export const drawQuadTree = false;
 
 // Visible area size
