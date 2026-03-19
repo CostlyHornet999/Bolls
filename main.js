@@ -121,12 +121,6 @@ function animate() {
 
 
 
-
-
-    // Optionally draw the QuadTree
-
-
-
     const t2 = performance.now();
     // Detection using QuadTree
     for (let k = 0; k < iterations; k++) { // Multiple iterations for more accuracy
@@ -162,6 +156,7 @@ function animate() {
     _totalCollision += (t3 - t2);
     Time_Collision.innerHTML = (_totalCollision / frame).toFixed(4);
 
+    // Optionally draw the QuadTree for debugging
     if (drawQuadTree) {
         const t4 = performance.now();
         quadTree.draw(ctx);
