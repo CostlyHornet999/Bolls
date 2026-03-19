@@ -5,25 +5,26 @@ export default class Line {
         this.P1 = new Point(x1, y1);
         this.P2 = new Point(x2, y2);
 
-        this.P1.normal = {
-            x: x1 - x2,
-            y: y1 - y2
-        };
-        const lengthP1 = Math.sqrt(this.P1.normal.x ** 2 + this.P1.normal.y ** 2);
-        this.P1.normal.x /= lengthP1;
-        this.P1.normal.y /= lengthP1;
-
-        this.P2.normal = {
+        this.P1.endnormal = {
             x: x2 - x1,
             y: y2 - y1
         };
-        const lengthP2 = Math.sqrt(this.P2.normal.x ** 2 + this.P2.normal.y ** 2);
-        this.P2.normal.x /= lengthP2;
-        this.P2.normal.y /= lengthP2;
+        const lengthP1 = Math.sqrt(this.P1.endnormal.x ** 2 + this.P1.endnormal.y ** 2);
+        this.P1.endnormal.x /= lengthP1;
+        this.P1.endnormal.y /= lengthP1;
+
+        this.P2.endnormal = {
+            x: x1 - x2,
+            y: y1 - y2
+        };
+        const lengthP2 = Math.sqrt(this.P2.endnormal.x ** 2 + this.P2.endnormal.y ** 2);
+        this.P2.endnormal.x /= lengthP2;
+        this.P2.endnormal.y /= lengthP2;
         
+        // This is the perpendicular line, pointing right from P1 to P2, used for collision response
         this.normal = {
-            x: y2 - y1,
-            y: x1 - x2
+            x: y1 - y2,
+            y: x2 - x1
         };
         // Normalize the normal vector
         const length = Math.sqrt(this.normal.x ** 2 + this.normal.y ** 2); // Pythagorean theorem
@@ -51,16 +52,7 @@ export default class Line {
         ctx.lineTo(midX + this.normal.x * 20, midY + this.normal.y * 20);
         ctx.stroke();
 
-
-        // Draw endpoint normals for visualization
-        ctx.beginPath();
-        ctx.strokeStyle = "#00aa00";
-        ctx.moveTo(this.P1.x - visibleWidth / 2, this.P1.y - visibleHeight / 2);
-        ctx.lineTo(this.P1.x + this.P1.normal.x * 10 - visibleWidth / 2, this.P1.y + this.P1.normal.y * 10 - visibleHeight / 2);
-        ctx.moveTo(this.P2.x - visibleWidth / 2, this.P2.y - visibleHeight / 2);
-        ctx.lineTo(this.P2.x + this.P2.normal.x * 10 - visibleWidth / 2, this.P2.y + this.P2.normal.y * 10 - visibleHeight / 2);
-        ctx.stroke();
-
+        // Draw the endpoints
         this.P1.draw(ctx);
         this.P2.draw(ctx);
 

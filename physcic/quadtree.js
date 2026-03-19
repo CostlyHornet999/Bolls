@@ -1,5 +1,12 @@
-import { visibleWidth, visibleHeight } from "../config.js";
+import { drawChosen, visibleWidth, visibleHeight, maxQuadTreeDepth, drawQuadTreeLeaves } from "../config.js";
 
+export class Circle{
+    constructor(x,y,r){
+        this.x = x;
+        this.y = y;
+        this.radius = r;
+    }
+}
 
 export class Rectangle{
     constructor(x,y,w,h){ // (x,y) is center, (w,h) is total width and height
@@ -22,7 +29,7 @@ export class Rectangle{
         );
     }
 
-    // checks if 2 rectangles overlap
+    // checks if 1 rectangle is fully contained within another rectangle
     containsRect(range) {
         return (
             this.x - this.hw < range.x-range.w/2 &&
@@ -31,6 +38,8 @@ export class Rectangle{
             this.y + this.hh > range.y+range.h/2
         ) 
     }
+
+    // checks if 2 rectangles overlap at all
     intersects(range) {
         const left   = this.x - this.hw;
         const right  = this.x + this.hw;
@@ -45,19 +54,42 @@ export class Rectangle{
         // if all of the sides 100% don't overlap, they don't overlap
         return !(rRight < left || rLeft > right || rBottom < top || rTop > bottom);
     }
+
+    //
+    CircleIntersectsRect(circle) {
+        // distance from ball center to rectangle center
+        const dx = Math.abs(circle.x - this.x);
+        const dy = Math.abs(circle.y - this.y);
+
+        // distance from ball center to rectangle edge
+        const xDist = dx - this.hw;
+        const yDist = dy - this.hh;
+    
+        // If the ball is too far away, it can't be colliding
+        if (xDist > circle.radius || yDist > circle.radius) {
+            return false;
+        }
+        // If the ball's center is inside the rectangle, it's definitely colliding
+        if (xDist <= 0 || yDist <= 0) {
+            return true;
+        }
+        // Otherwise, check if the corner of the rectangle is inside the ball
+        return xDist * xDist + yDist * yDist <= circle.radius * circle.radius;
+    }
 }
 
 
 export class QuadTree {
-    constructor(boundary, capacity = 4, maxDepth = 600) {
+    constructor(boundary, capacity = 4) {
         this.boundary = boundary;
         this.capacity = capacity;
 
         this.depth = 0;
-        this.maxdepth = maxDepth;
+        this.maxdepth = maxQuadTreeDepth;
 
         // First grid is empty
         this.points = [];
+        this.lines = [];
         this.divided = false;
 
         this.NW = null;
@@ -67,7 +99,7 @@ export class QuadTree {
     }
 
     // This recursively splits the grid into 4 equal pieces
-subDivide() {
+    subDivide() {
     const { x, y, hw, hh } = this.boundary;
     this.NW = new QuadTree(
         new Rectangle(x - hw/2, y - hh/2, hw, hh),
@@ -90,7 +122,9 @@ subDivide() {
 
     this.divided = true;
 }
-
+    lineinsert(line) {
+        
+    }
     insert(point) {
         // Is the point relevant?
         if (!this.boundary.contains(point)){
@@ -144,17 +178,17 @@ subDivide() {
         }
     }
 
-    Query(range, found = []) {
+    QueryRect(range, found = []) {
         // Quick Paths
         // If we're no longer intersecting with query, leave
         if (!this.boundary.intersects(range)){
             return found
         }
         // If a node is fully contained in range
-        //if (range.containsRect(this.boundary)){
-        //    this._collectALL(found);
-        //    return found;
-        //}
+        if (range.containsRect(this.boundary)){
+            this._collectALL(found);
+            return found;
+        }
 
 
         // Only search for points if this is a leaf/child grid 
@@ -166,12 +200,41 @@ subDivide() {
                 }
             }
         } else {
-            this.NW.Query(range, found);
-            this.NE.Query(range, found);
-            this.SW.Query(range, found);
-            this.SE.Query(range, found);
+            this.NW.QueryRect(range, found);
+            this.NE.QueryRect(range, found);
+            this.SW.QueryRect(range, found);
+            this.SE.QueryRect(range, found);
         }
 
+        return found;
+    }
+    QueryCircle(circle, found = [], chosen = false, ctx = null) {
+        // Quick Paths
+        // If we're no longer intersecting with query, leave
+        if (!this.boundary.CircleIntersectsRect(circle)){
+            return found;
+        }else if (!this.divided && this.points.length > 0 && chosen === true) {
+            ctx.fillStyle = "rgba(255,100,100,0.4)";
+            ctx.fillRect(this.boundary.x-this.boundary.w/2-visibleWidth/2, this.boundary.y-this.boundary.h/2-visibleHeight/2, this.boundary.w, this.boundary.h);
+        }
+
+        if (!this.divided) {
+            for (const p of this.points) {
+                const dx = p.x - circle.x;
+                const dy = p.y - circle.y;
+                const r = (p.radius || 0) + circle.radius; // If points have a radius, consider it. Otherwise, treat them as circles with radius 0
+
+                // If the distance from the point to the circle's center is less than the sum of their radii, they intersect
+                if (dx * dx + dy * dy <= r * r) {
+                    found.push(p);
+                }
+            }
+        } else { // WE GO DEEPER
+            this.NW.QueryCircle(circle, found, chosen, ctx);
+            this.NE.QueryCircle(circle, found, chosen, ctx);
+            this.SW.QueryCircle(circle, found, chosen, ctx);
+            this.SE.QueryCircle(circle, found, chosen, ctx);
+        }
         return found;
     }
 
@@ -186,7 +249,7 @@ subDivide() {
             this.SW.draw(ctx);
             this.SE.draw(ctx);
         } 
-        else if (this.points.length > 0) {
+        else if (this.points.length > 0 && drawQuadTreeLeaves) {
             ctx.fillStyle = "rgba(255,100,100,0.4)";
             ctx.fillRect(x-w/2-visibleWidth/2, y-h/2-visibleHeight/2, w, h);
         }

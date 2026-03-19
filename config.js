@@ -1,7 +1,12 @@
 
 // Inputs
-export const ballNumber = 250;
+export const ballNumber = 500;
 export const drawQuadTree = false;
+export const drawQuadTreeLeaves = false;
+export const drawChosen = false;
+export const maxQuadTreeDepth = 20;
+
+export const iterations = 10;
 
 // Visible area size
 export const visibleWidth = 600;
@@ -12,10 +17,11 @@ const diagonal = Math.sqrt(visibleWidth**2 + visibleHeight**2);
 export const canvasSize = Math.ceil(diagonal * 1.2);  // 20% extra safety
 
 // Gravity variables and function
-export let gravityStrength = 0.3;    // How strong gravity is
+export let gravityStrength = 0.15;    // How strong gravity is
 export let gravity = { x: 0, y: gravityStrength };
 
-export function updateGravity(rotationAngle) { // Recalculate gravity when the screen is rotated
+export function updateGravity(rotationAngle, gravitySTR) { // Recalculate gravity when the screen is rotated
+    gravityStrength = gravitySTR;
     gravity.x = gravityStrength * Math.sin(rotationAngle);  // horizontal pull
     gravity.y = gravityStrength * Math.cos(rotationAngle);  // vertical pull (down when angle=0)
 }

@@ -1,10 +1,14 @@
 import { visibleWidth, visibleHeight, gravity} from '../config.js';
 
+let id = 0;
 export default class Ball {
-    constructor() {
+    constructor(chosen = false) {
+        // Chosen!
+        this.chosen = chosen;
+
         // Location
-        this.x = visibleWidth / 2;
-        this.y = visibleHeight / 2;
+        this.x = Math.random() * visibleWidth;
+        this.y = 50;
 
         // Speed
         this.vx = Math.random() * 20 - 10; // -4 to +4
@@ -15,8 +19,10 @@ export default class Ball {
         this.color = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
 
         // Physical Properties
+        this.id = id++;
         this.radius = Math.random() * 15 + 5;
-        this.elasticity = 0.6;
+        this.mass = this.radius**2; // mass proportional to area
+        this.elasticity = 0.8;
         this.shrink = true;
         this.shrink_speed = 0.05;
     }
@@ -50,5 +56,15 @@ export default class Ball {
         ctx.arc(relX, relY, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
+        if (this.chosen) {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#ff0000";
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(relX, relY, this.radius*5, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(255,0,0,0.5)";
+            ctx.stroke();
+        }
     }
 }
