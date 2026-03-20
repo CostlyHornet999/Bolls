@@ -1,4 +1,4 @@
-import { visibleWidth, visibleHeight, gravity} from '../config.js';
+import { visibleWidth, visibleHeight, gravity, elasticity} from '../config.js';
 
 let id = 0;
 export default class Ball {
@@ -20,32 +20,37 @@ export default class Ball {
 
         // Physical Properties
         this.id = id++;
-        this.radius = Math.random() * 15 + 5;
+        this.radius = Math.random() * 5+10 ;
         this.mass = this.radius**2; // mass proportional to area
-        this.elasticity = 0.8;
+        this.inertia = 0.5 * this.mass * this.radius**2; // moment of inertia
+        this.elasticity = elasticity;
         this.shrink = true;
         this.shrink_speed = 0.05;
     }
-    Do_Frame_Things() {
+    Do_Frame_Things(dt = 1) {
         // Applies gravity
-        this.vy += gravity.y;
-        this.vx += gravity.x;
+        this.vy += gravity.y * dt;
+        this.vx += gravity.x * dt;
 
         // Move using THIS object's velocity
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
 
         // Bounce off walls
         if (this.x - this.radius < 0 || this.x + this.radius > visibleWidth) {
             this.vx *= -1 * this.elasticity; // reverse horizontal velocity
-            this.vy *= Math.sqrt(this.elasticity);
+            this.vy *= 0.98; // lose some vertical velocity to simulate friction
             this.x = Math.max(this.radius, Math.min(visibleWidth - this.radius, this.x));
         }
         if (this.y - this.radius < 0 || this.y + this.radius > visibleHeight) {
             this.vy *= -1 * this.elasticity; // reverse vertical velocity
-            this.vx *= Math.sqrt(this.elasticity);
+            this.vx *= 0.99;
             this.y = Math.max(this.radius, Math.min(visibleHeight - this.radius, this.y));
         }
+        this.vx *= 0.999;
+        this.vy *= 0.999;
+        if (Math.abs(this.vx) < 0.001) this.vx = 0;
+        if (Math.abs(this.vy) < 0.001) this.vy = 0;
     }
     draw(ctx) {   
         // Draw the ball

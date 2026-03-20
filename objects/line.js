@@ -31,6 +31,28 @@ export default class Line {
         this.normal.x /= length;
         this.normal.y /= length;
     }
+
+    closestPointTo(x, y) {       
+        // vector for teh line segment
+        let dx = this.P2.x - this.P1.x;
+        let dy = this.P2.y - this.P1.y;
+        const lengthSq = dx * dx + dy * dy;
+        if (lengthSq === 0) return {x: this.P1.x, y: this.P1.y}; // Line is a point, treat as collision with a point
+
+        // Dot product (we love dot products bb) to find if the ball is within the line segment
+        let t = ((x - this.P1.x) * dx + (y - this.P1.y) * dy) / lengthSq;
+
+        // if t is between 0 and 1, the closest point is within the segment, otherwise it's one of the endpoints
+        t = Math.max(0, Math.min(1, t)); // Clamp t to [0, 1]
+        
+        // Return the closest point as an object
+        return {
+            x: this.P1.x + t * dx,
+            y: this.P1.y + t * dy
+        };
+
+    }
+
     Do_Frame_Things() {
         
     }

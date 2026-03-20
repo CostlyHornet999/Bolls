@@ -5,8 +5,8 @@ import Ball from './objects/ball.js';
 import Line from './objects/line.js';
 import Point from './objects/point.js';
 import { QuadTree, Rectangle, Circle } from './physcic/quadtree.js';
-import { iterations, drawChosen, drawQuadTree, ballNumber, visibleWidth, visibleHeight, canvasSize, updateGravity, gravityStrength, gravity } from './config.js';
-import { resolveBallBall } from './physcic/collision.js';
+import { substeps, iterations, drawChosen, drawQuadTree, ballNumber, visibleWidth, visibleHeight, canvasSize, updateGravity, gravityStrength, gravity } from './config.js';
+import { resolveBallBall, resolveBallLine } from './physcic/collision.js';
 
 const myCanvas = document.getElementById("myCanvas");
 
@@ -48,7 +48,7 @@ for (let i = 0; i < ballNumber; i++) {
 
 // Create some lines
 //Lines.push(new Line(50, 300, 550, 300));
-//Lines.push(new Line(100, 200, 500, 250));
+Lines.push(new Line(100, 200, 500, 250));
 //Lines.push(new Line(200, 100, 400, 150));
 
 // Create some points
@@ -115,7 +115,6 @@ function animate() {
             i--;
             continue;              // Skip drawing this dead ball
         }
-        Balls[i].Do_Frame_Things();
     }
 
 
@@ -123,32 +122,38 @@ function animate() {
 
     const t2 = performance.now();
     // Detection using QuadTree
-    for (let k = 0; k < iterations; k++) { // Multiple iterations for more accuracy
-        // Rebuild QuadTree each frame with updated ball positions
+    for (let s = 0; s < substeps; s++) {
+        for (let i = 0; i < Balls.length; i++) {
+            Balls[i].Do_Frame_Things(1 / substeps);
+        }
         const t0 = performance.now();
 
         quadTree = new QuadTree(new Rectangle(visibleWidth / 2, visibleHeight / 2, visibleWidth, visibleHeight));
         Balls.forEach(ball => { quadTree.insert(ball); });
-        
+
         const t1 = performance.now();
         _totalInitial += (t1 - t0)
         Time_InitialQuadTree.innerHTML = (_totalInitial / frame).toFixed(4);
 
-        for (let i = 0; i < Balls.length; i++) {
-            const ball = Balls[i];
+        for (let k = 0; k < iterations; k++) { // Multiple iterations for more accuracy
+            // Rebuild QuadTree each frame with updated ball positions
+           
+            for (let i = 0; i < Balls.length; i++) {
+                const ball = Balls[i];
+                resolveBallLine(ball, Lines[0]);
+                // Broad phase:
+                const range = new Rectangle(ball.x, ball.y, ball.radius * 5 + 10, ball.radius * 5 + 10);
+                const candidates = quadTree.QueryRect(range);
 
-            // Broad phase:
-            const range = new Rectangle(ball.x, ball.y, ball.radius * 5 + 10, ball.radius * 5 + 10);
-            const candidates = quadTree.QueryRect(range);
+                // Narrow phase:
+                for (const other of candidates) {
+                    if (other === ball) continue; // Don't check against itself
 
-            // Narrow phase:
-            for (const other of candidates) {
-                if (other === ball) continue; // Don't check against itself
+                    // prevent double resolve
+                    if (other.id <= ball.id) continue;
 
-                // prevent double resolve
-                if (other.id <= ball.id) continue;
-
-                resolveBallBall(ball, other);
+                    resolveBallBall(ball, other);
+                }
             }
         }
     }
@@ -171,7 +176,9 @@ function animate() {
         if (ball.chosen) {
             Query_QuadTreeChosen.innerHTML = quadTree.QueryCircle(new Circle(ball.x, ball.y, ball.radius * 5), [], true, ctx).length;
         }
+        
         ball.draw(ctx);
+
     });
     // Restore the context (undo rotation/translation)
     ctx.restore();

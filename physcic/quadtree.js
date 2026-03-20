@@ -80,7 +80,7 @@ export class Rectangle{
 
 
 export class QuadTree {
-    constructor(boundary, capacity = 4) {
+    constructor(boundary, capacity = 10) {
         this.boundary = boundary;
         this.capacity = capacity;
 
