@@ -1,14 +1,14 @@
 
 // Inputs
-export const ballNumber = 50;
+export const ballNumber = 500;
 export const elasticity = 0.7;
 export const drawQuadTree = false;
 export const drawQuadTreeLeaves = false;
 export const drawChosen = false;
-export const maxQuadTreeDepth = 20;
+export const maxQuadTreeDepth = 10;
 
 export const iterations = 5;
-export const substeps = 3;
+export const substeps = 4;
 
 // Visible area size
 export const visibleWidth = 600;

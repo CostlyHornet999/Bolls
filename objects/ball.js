@@ -39,7 +39,7 @@ export default class Ball {
         // Bounce off walls
         if (this.x - this.radius < 0 || this.x + this.radius > visibleWidth) {
             this.vx *= -1 * this.elasticity; // reverse horizontal velocity
-            this.vy *= 0.98; // lose some vertical velocity to simulate friction
+            this.vy *= 0.99; // lose some vertical velocity to simulate friction
             this.x = Math.max(this.radius, Math.min(visibleWidth - this.radius, this.x));
         }
         if (this.y - this.radius < 0 || this.y + this.radius > visibleHeight) {
